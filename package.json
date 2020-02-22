@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/MingMZ/moving-slider-cache/issues"
   },
-  "main": "index.js",
+  "main": "src/virtual-scroll-buffer.js",
   "scripts": {
     "test": "mocha -r esm ./test/test.js"
   },
