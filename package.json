@@ -4,13 +4,13 @@
   "description": "A buffer for virtual scroll",
   "author": "MingMZ",
   "license": "MIT",
-  "homepage": "https://github.com/MingMZ/moving-slider-cache#readme",
+  "homepage": "https://github.com/MingMZ/virtual-scroll-buffer",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MingMZ/moving-slider-cache.git"
+    "url": "git+https://github.com/MingMZ/virtual-scroll-buffer.git"
   },
   "bugs": {
-    "url": "https://github.com/MingMZ/moving-slider-cache/issues"
+    "url": "https://github.com/MingMZ/virtual-scroll-buffer/issues"
   },
   "main": "src/virtual-scroll-buffer.js",
   "scripts": {
