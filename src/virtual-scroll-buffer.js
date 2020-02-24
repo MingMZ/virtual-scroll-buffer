@@ -1,18 +1,16 @@
 'use strict'
 
 class VirtualScrollBuffer {
-  minPosition = 0
-
   buffer = {
     position: 0,
     data: [],
   }
 
-  constructor(minPosition = 0) {
-    if (!Number.isInteger(minPosition)) {
-      throw new Error(`Minimal position is invalid: ${minPosition}`)
+  constructor(capacity = 1000) {
+    if (!Number.isInteger(capacity) || capacity <= 0) {
+      throw new Error(`Capacity is invalid: ${capacity}`)
     }
-    this.minPosition = minPosition
+    this.capacity = capacity
   }
 
   get length() {
@@ -91,6 +89,49 @@ class VirtualScrollBuffer {
     }
   }
 
+  truncateBuffer(position) {
+    if (this.buffer.data.length <= this.capacity) {
+      // under capacity
+      return
+    }
+
+    if (
+      position < this.buffer.position ||
+      this.buffer.position + this.buffer.data.length <= position
+    ) {
+      // base truncate position is outside of buffer's range
+      return
+    }
+
+    const newBuffer = this.buffer
+
+    // calculate the number of items to be removed from relative given position
+    let removeFromStart = position - newBuffer.position
+
+    // if number of items allocated from position to upper bound of buffer is
+    // below capacity, choose the method that remove the least number of items
+    // from buffer
+
+    if (this.buffer.data.length > this.capacity) {
+      removeFromStart = Math.min(
+        removeFromStart,
+        this.buffer.data.length - this.capacity
+      )
+    }
+
+    if (removeFromStart > 0) {
+      newBuffer.position = newBuffer.position + removeFromStart
+      newBuffer.data = newBuffer.data.slice(removeFromStart)
+    }
+
+    const removeFromEnd = newBuffer.data.length - this.capacity
+    if (removeFromEnd > 0) {
+      newBuffer.data = newBuffer.data.slice(0, this.capacity)
+    }
+
+    this.buffer = newBuffer
+  }
+
   reset() {
     this.buffer = {
       position: 0,
@@ -109,7 +150,7 @@ class VirtualScrollBuffer {
   }
 
   _assertBufferPosition(position) {
-    if (!Number.isInteger(position) || position < this.minPosition) {
+    if (!Number.isInteger(position)) {
       throw new Error(`Buffer position value is invalid: ${position}`)
     }
   }
@@ -125,13 +166,21 @@ export default {
   default: null,
 
   // initiate the default instance
-  init(min = 0) {
-    this.default = new VirtualScrollBuffer(min)
+  init(capacity = 1000) {
+    this.default = new VirtualScrollBuffer(capacity)
   },
 
   // create and return a new instance
   create() {
     return new VirtualScrollBuffer()
+  },
+
+  get capacity() {
+    return this.default.capacity
+  },
+
+  set capacity(value) {
+    this.default.capacity = value
   },
 
   get length() {
@@ -145,7 +194,12 @@ export default {
 
   setBuffer(position, data) {
     this._assertInit()
-    return this.default.setBuffer(position, data)
+    this.default.setBuffer(position, data)
+  },
+
+  truncateBuffer(position) {
+    this._assertInit()
+    this.default.truncateBuffer(position)
   },
 
   reset() {

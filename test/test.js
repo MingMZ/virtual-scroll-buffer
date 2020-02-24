@@ -8,8 +8,16 @@ describe('virtual-scroll-buffer', () => {
       assert.doesNotThrow(() => vsb.init(1))
     })
 
-    it('should throw when non-integer is used to initialise the buffer', () => {
+    it('should throw when value is not an integer', () => {
       assert.throws(() => vsb.init(1.5))
+    })
+
+    it('should throw when value is zero', () => {
+      assert.throws(() => vsb.init(0))
+    })
+
+    it('should throw when value is negative', () => {
+      assert.throws(() => vsb.init(-1))
     })
   })
 
@@ -183,6 +191,149 @@ describe('virtual-scroll-buffer', () => {
         vsb.setBuffer.apply(vsb, test.args)
         assert.equal(vsb.default.buffer.position, test.expected.position)
         assert.deepEqual(vsb.default.buffer.data, test.expected.data)
+      })
+    })
+  })
+
+  describe('truncateBuffer()', () => {
+    const tests = [
+      {
+        args: {
+          buffer: { position: 0, data: [] },
+          capacity: 10,
+          position: 0,
+        },
+        expected: { position: 0, data: [] },
+      },
+      {
+        args: {
+          buffer: {
+            position: 0,
+            data: Array.from({ length: 10 }, (_, i) => i),
+          },
+          capacity: 10,
+          position: 0,
+        },
+        expected: {
+          position: 0,
+          data: Array.from({ length: 10 }, (_, i) => i),
+        },
+      },
+      {
+        args: {
+          buffer: {
+            position: 0,
+            data: Array.from({ length: 10 }, (_, i) => i),
+          },
+          capacity: 5,
+          position: 0,
+        },
+        expected: {
+          position: 0,
+          data: Array.from({ length: 5 }, (_, i) => i),
+        },
+      },
+      {
+        args: {
+          buffer: {
+            position: 0,
+            data: Array.from({ length: 10 }, (_, i) => i),
+          },
+          capacity: 5,
+          position: 5,
+        },
+        expected: {
+          position: 5,
+          data: Array.from({ length: 5 }, (_, i) => 5 + i),
+        },
+      },
+      {
+        args: {
+          buffer: {
+            position: 0,
+            data: Array.from({ length: 10 }, (_, i) => i),
+          },
+          capacity: 8,
+          position: 5,
+        },
+        expected: {
+          position: 2,
+          data: Array.from({ length: 8 }, (_, i) => 2 + i),
+        },
+      },
+      {
+        args: {
+          buffer: {
+            position: 0,
+            data: Array.from({ length: 10 }, (_, i) => i),
+          },
+          capacity: 10,
+          position: 5,
+        },
+        expected: {
+          position: 0,
+          data: Array.from({ length: 10 }, (_, i) => i),
+        },
+      },
+      {
+        args: {
+          buffer: {
+            position: 10,
+            data: Array.from({ length: 10 }, (_, i) => i),
+          },
+          capacity: 5,
+          position: 0,
+        },
+        expected: {
+          position: 10,
+          data: Array.from({ length: 10 }, (_, i) => i),
+        },
+      },
+      {
+        args: {
+          buffer: {
+            position: 10,
+            data: Array.from({ length: 10 }, (_, i) => i),
+          },
+          capacity: 5,
+          position: 10,
+        },
+        expected: {
+          position: 10,
+          data: Array.from({ length: 5 }, (_, i) => i),
+        },
+      },
+      {
+        args: {
+          buffer: {
+            position: 10,
+            data: Array.from({ length: 10 }, (_, i) => i),
+          },
+          capacity: 5,
+          position: 20,
+        },
+        expected: {
+          position: 10,
+          data: Array.from({ length: 10 }, (_, i) => i),
+        },
+      },
+    ]
+
+    tests.forEach(test => {
+      it(`(${test.args.buffer.position},[len:${test.args.buffer.data.length}]) -> truncateBuffer(${test.args.position}) with capacity of ${test.args.capacity}`, () => {
+        vsb.init(test.args.capacity)
+        vsb.default.buffer = test.args.buffer
+        vsb.truncateBuffer.apply(vsb, [test.args.position])
+        assert.equal(
+          vsb.default.buffer.position,
+          test.expected.position,
+          'Buffer position changed'
+        )
+        assert.deepEqual(
+          vsb.default.buffer.data,
+          test.expected.data,
+          'Buffer content changed'
+        )
       })
     })
   })
